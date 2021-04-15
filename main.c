@@ -5,10 +5,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// tick 554594
+//      55187 * (34)
+
 #pragma warning(disable:4996)
 
-#define TRAIN_AI_NUM    ( 1000 )
-#define KEEP_TRAINED_AI ( 31 )      // TODO: find (x**2-x)*.5 = TRAIN_AI_NUM
+#define TRAIN_AI_NUM    ( 200 )
+#define KEEP_TRAINED_AI ( 12 )      // TODO: find (x**2-x)*.5 = TRAIN_AI_NUM
 
 #define INPUT_LEVEL_CELL_INDEX_MAX  ( 10*3 )
 #define ANS_LEVEL_CELL_INDEX_MAX    ( 1 )
@@ -54,7 +57,7 @@ typedef struct CellTable
 
 #if /* Tools */ 1
 // [min,max) step = 0.001
-float GetRandomFloat(float min, float max, float step)
+float GetRandomFloat(const float min, const float max, const float step)
 {
     if( min == max )
     {
@@ -62,8 +65,8 @@ float GetRandomFloat(float min, float max, float step)
     }
     if( min < max )
     {
-        float stepInv = 1.f / step;
-        int length = (int)((max - min) * stepInv);
+        const float stepInv = 1.f / step;
+        const int length = (int)((max - min) * stepInv);
         return rand()%length/stepInv + min;
     }
     else
@@ -73,7 +76,7 @@ float GetRandomFloat(float min, float max, float step)
     }
 }
 
-int GetRandomInt(int min, int max)
+int GetRandomInt(const int min, const int max)
 {
     if( min == max )
     {
@@ -81,7 +84,7 @@ int GetRandomInt(int min, int max)
     }
     if( min < max )
     {
-        int length = (max - min);
+        const int length = (max - min);
         return rand()%length + min;
     }
     else
@@ -91,22 +94,22 @@ int GetRandomInt(int min, int max)
     }
 }
 
-int GetDigit1(int num)
+int GetDigit1(const int num)
 {
     return num%10;
 }
 
-int GetDigit2(int num)
+int GetDigit2(const int num)
 {
     return (num/10)%10;
 }
 
-int GetDigit3(int num)
+int GetDigit3(const int num)
 {
     return (num/100)%10;
 }
 
-int Boolean(bool cond)
+int Boolean(const bool cond)
 {
     return (cond)?1:0;
 }
@@ -118,14 +121,14 @@ x
 if x%2 == 0 return 1
 else return 0
 */
-int GetCorrectAns(float num)
+int GetCorrectAns(const float num)
 {
     return ((int)(num)%2) == 0;
 }
 
 float GetRandomWeight()
 {
-    float ret = GetRandomFloat(-1, 1, 0.001f);
+    const float ret = GetRandomFloat(-1, 1, 0.001f);
     assert(ret >= -1.0 && ret <= 1.0);
     return ret;
 }
@@ -153,7 +156,7 @@ int AiInitWeight(WeightTable * weight_table)
     return 0;
 }
 
-int AiInitWeightAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], int array_size)
+int AiInitWeightAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], const int array_size)
 {
     for( int i=0; i<array_size; i++)
     {
@@ -162,7 +165,7 @@ int AiInitWeightAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], int array_
     return 0;
 }
 
-int AiPrintfWeight(const WeightTable * const weight)
+int AiPrintWeight(const WeightTable * const weight)
 {
     float num;
     // input level
@@ -194,14 +197,14 @@ int AiPrintfWeight(const WeightTable * const weight)
     return 0;
 }
 
-float MutateWeight(float num, float range)
+float MutateWeight(const float num, const float range)
 {
     float ret = num;
     ret = ret + GetRandomFloat(-1.f * range, range, 0.001f );
     return ret;
 }
 
-int AiMutate(WeightTable * weight_table, float range)
+int AiMutate(WeightTable * weight_table, const float range)
 {
     for(int i=0; i<WEIGHT_ALL_INDEX; i++)
     {
@@ -210,7 +213,7 @@ int AiMutate(WeightTable * weight_table, float range)
     return 0;
 }
 
-int AiVaria(WeightTable * weight_table, const WeightTable * const target1, const WeightTable * const target2, float range)
+int AiVaria(WeightTable * weight_table, const WeightTable * const target1, const WeightTable * const target2, const float range)
 {
     for(int i=0; i<WEIGHT_ALL_INDEX; i++)
     {
@@ -231,7 +234,7 @@ int AiExec(const float num, const WeightTable * const weight_table)
 #if 1
     // input level
     // digit to cell[0]
-    int num_int = (int)num;
+    const int num_int = (int)num;
     cell_table.input_level_cell[ 0] = (float)Boolean(GetDigit1(num_int) == 0);
     cell_table.input_level_cell[ 1] = (float)Boolean(GetDigit1(num_int) == 1);
     cell_table.input_level_cell[ 2] = (float)Boolean(GetDigit1(num_int) == 2);
@@ -284,7 +287,7 @@ int AiExec(const float num, const WeightTable * const weight_table)
     for(int level=1; level<CELL_LEVEL_MAX; level++)
     {
         int weight_index = 0;
-        int last_level = level-1;
+        const int last_level = level-1;
         for(int cell_index=0; cell_index<CELL_INDEX_MAX; cell_index++)
         {
             float sum = 0.f;
@@ -303,7 +306,7 @@ int AiExec(const float num, const WeightTable * const weight_table)
     {
         float sum = 0.f;
         int weight_ans_level_index = 0;
-        int last_level = CELL_LEVEL_MAX-1;
+        const int last_level = CELL_LEVEL_MAX-1;
         for(int cell_last_index=0; cell_last_index<CELL_INDEX_MAX; cell_last_index++)
         {
             sum += cell_table.proc_cell[last_level][cell_last_index] * weight_table->proc_level_weight[last_level][weight_ans_level_index++];
@@ -365,7 +368,7 @@ int FileWrite(char * file_name, WeightTable * weight_table)
     return fclose(fp);
 }
 
-int FileWriteAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], int array_size)
+int FileWriteAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], const int array_size)
 {
     FILE * fp = fopen(FILENAME_ALL, "wb" );
     for(int i=0; i<array_size; i++)
@@ -382,7 +385,7 @@ int FileRead(char * file_name, WeightTable * weight_table)
     return fclose(fp);
 }
 
-int FileReadAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], int array_size)
+int FileReadAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], const int array_size)
 {
     FILE * fp = fopen(FILENAME_ALL, "rb" );
     for(int i=0; i<array_size; i++)
@@ -392,7 +395,7 @@ int FileReadAll(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], int array_size
     return fclose(fp);
 }
 
-int InitWeightAndWriteToFileThenExit(WeightTable weight_table_array[], int lock_seed, int print_init, int print_read, int do_pause, int do_exit)
+int InitWeightAndWriteToFileThenExit(WeightTable weight_table_array[], const int lock_seed, const int print_init, const int print_read, const int do_pause, const int do_exit)
 {
     if( lock_seed )
     {
@@ -404,7 +407,7 @@ int InitWeightAndWriteToFileThenExit(WeightTable weight_table_array[], int lock_
     for(int i=0; i<TRAIN_AI_NUM; i++)
     {
         printf("Init %d:\n", i);
-        AiPrintfWeight(&weight_table_array[i]);
+        AiPrintWeight(&weight_table_array[i]);
     }
 
     FileWriteAll(weight_table_array, TRAIN_AI_NUM);
@@ -417,7 +420,7 @@ int InitWeightAndWriteToFileThenExit(WeightTable weight_table_array[], int lock_
     for(int i=0; i<TRAIN_AI_NUM; i++)
     {
         printf("Read %d:\n", i);
-        AiPrintfWeight(&weight_table_array[i]);
+        AiPrintWeight(&weight_table_array[i]);
     }
 
     printf("save!");
@@ -429,7 +432,7 @@ int InitWeightAndWriteToFileThenExit(WeightTable weight_table_array[], int lock_
     return 0;
 }
 
-int TryReadWeightFile(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], int lock_seed, int print_init, int print_read, int do_pause, int do_exit)
+int TryReadWeightFile(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], const int lock_seed, const int print_init, const int print_read, const int do_pause, const int do_exit)
 {
     FILE * fp = fopen(FILENAME_ALL, "r" );
     if( fp == NULL )
@@ -447,7 +450,7 @@ int TryReadWeightFile(WeightTable weight_table_array[/*TRAIN_AI_NUM*/], int lock
 #endif
 
 
-float RepeatTrainAi(WeightTable * weight_table, int repeat_time, int lock_seed, int lock_num, int print_per_ans, int do_per_ans_pause)
+float RepeatTrainAi(WeightTable * weight_table, const int repeat_time, const int lock_seed, const int lock_num, const int print_per_ans, const int do_per_ans_pause)
 {
     float reward;
     float num;
@@ -485,7 +488,7 @@ float RepeatTrainAi(WeightTable * weight_table, int repeat_time, int lock_seed, 
     return reward;
 }
 
-float TrainAiEnter(WeightTable weight_table_array[], float reward_array[], int repeat_time, int lock_seed, int lock_num, int max_ai_train_index, int print_weight, int print_per_ans, int do_per_index_pause, int do_per_ans_pause)
+float TrainAiEnter(WeightTable weight_table_array[], float reward_array[], const int repeat_time, const int lock_seed, const int lock_num, const int max_ai_train_index, const int print_weight, const int print_per_ans, const int do_per_index_pause, const int do_per_ans_pause)
 {
     float max_reward = 0;
     WeightTable * weight_table;
@@ -493,7 +496,7 @@ float TrainAiEnter(WeightTable weight_table_array[], float reward_array[], int r
     for(int ai_train_index=0;ai_train_index<max_ai_train_index;ai_train_index++)
     {
         weight_table = &weight_table_array[ai_train_index];
-        print_weight && AiPrintfWeight(weight_table);
+        print_weight && AiPrintWeight(weight_table);
 
         float reward;
         reward = RepeatTrainAi(weight_table, repeat_time, lock_seed, lock_num, print_per_ans, do_per_ans_pause);
@@ -507,7 +510,7 @@ float TrainAiEnter(WeightTable weight_table_array[], float reward_array[], int r
     return max_reward;
 }
 
-int SortAiWeightIndex(int need_sort_index_array[], float reward_array[], int max_index)
+int SortAiWeightIndex(int need_sort_index_array[], float reward_array[], const int max_index)
 {
     int index = 0;
     float max_reward = reward_array[0];
@@ -529,7 +532,7 @@ int SortAiWeightIndex(int need_sort_index_array[], float reward_array[], int max
                 index++;
             }
         }
-        float max_last_reward = max_reward;
+        const float max_last_reward = max_reward;
         int exit = true;
         max_reward = INT32_MIN;
         for(int i=0; i<max_index; i++)
@@ -550,18 +553,18 @@ int SortAiWeightIndex(int need_sort_index_array[], float reward_array[], int max
     return index;
 }
 
-int UpdateAiWeight(WeightTable weight_table_array[], int sorted_index_array[], int max_index)
+int UpdateAiWeight(WeightTable weight_table_array[], int sorted_index_array[], const int max_index)
 {
-    float range = 0.5f;
+    const float range = 0.5f;
     //WeightTable weight_table_trained_array[KEEP_TRAINED_AI];
     WeightTable * weight_table_trained_array;
-    weight_table_trained_array = malloc(sizeof(WeightTable) * KEEP_TRAINED_AI);
+    weight_table_trained_array = (WeightTable*)malloc(sizeof(WeightTable) * KEEP_TRAINED_AI);
 
     // Keep weight and mutate
-    int keep_index = KEEP_TRAINED_AI;
+    const int keep_index = KEEP_TRAINED_AI;
     for(int i=0; i<keep_index; i++)
     {
-        int index = sorted_index_array[i];
+        const int index = sorted_index_array[i];
         memcpy(&weight_table_trained_array[i], &weight_table_array[index], sizeof(weight_table_array[0]));
     }
     for(int i=0; i<keep_index; i++)
@@ -605,7 +608,7 @@ int main()
 
     // Can not use local var because of 0x7fffffff
     WeightTable * g_weight_table_array;
-    g_weight_table_array = malloc(sizeof(WeightTable) * TRAIN_AI_NUM);
+    g_weight_table_array = (WeightTable*)malloc(sizeof(WeightTable) * TRAIN_AI_NUM);
 
     // printf("%d\n", sizeof(WeightTable));
     // printf("%d\n", sizeof(g_weight_table_array));
@@ -634,7 +637,7 @@ int main()
         do_per_index_pause  = true;
         do_per_ans_pause    = true;
     }
-#elif 1
+#elif 0
     {
         // Check
         repeat_time         = 1000;
@@ -662,14 +665,17 @@ int main()
 
     for(int train_cnt=0;;train_cnt++)
     {
+        const DWORD tick_start = GetTickCount();
         max_reward = TrainAiEnter(g_weight_table_array, reward_array, repeat_time, lock_seed, lock_num, max_ai_train_index, print_weight, print_per_ans, do_per_index_pause, do_per_ans_pause);
+        const DWORD tick_end = GetTickCount();
+        printf("tick: %lu\n", tick_end - tick_start);
 
         SortAiWeightIndex(sorted_index_array, reward_array, max_ai_train_index);
 
-        // Win, save and exit
+        // if win, save and exit
         if( max_reward >= repeat_time * 0.99999)
         {
-            int index = sorted_index_array[0];
+            const int index = sorted_index_array[0];
             memcpy(&g_weight_table_array[0], &g_weight_table_array[index], sizeof(g_weight_table_array[0]));
             break;
         }
